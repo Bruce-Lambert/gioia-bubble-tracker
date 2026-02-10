@@ -212,26 +212,27 @@ const main = async () => {
       setText("ret-oct", "—");
     }
 
+    const priceValues = dates.map((d) => series[d]);
+
     const datasets = [
       {
-        label: `$${investAmount} invested on ${augDate}`,
-        data: aug.values,
-        borderWidth: 2,
-        pointRadius: 0,
-        tension: 0.15
-      },
-      {
-        label: `$${investAmount} invested on ${octDate}`,
-        data: oct.values,
+        label: `${symbol} adjusted close`,
+        data: priceValues,
+        borderColor: "rgb(59, 130, 246)",
+        backgroundColor: "rgba(59, 130, 246, 0.1)",
+        fill: true,
         borderWidth: 2,
         pointRadius: 0,
         tension: 0.15
       }
     ];
 
+    const augIdx = firstIndexOnOrAfter(dates, augDate);
+    const octIdx = firstIndexOnOrAfter(dates, octDate);
+
     const predictionLines = [
-      { index: aug.idx, label: `Aug 8, 2025` },
-      { index: oct.idx, label: `Oct 30, 2025` }
+      { index: augIdx, label: `Aug 8, 2025` },
+      { index: octIdx, label: `Oct 30, 2025` }
     ].filter((x) => typeof x.index === "number");
 
     buildChart(dates, datasets, predictionLines);
