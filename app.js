@@ -149,6 +149,7 @@ const main = async () => {
     const dates = toSortedDates(series);
 
     if (dates.length === 0) {
+      el("verdicts").innerHTML = "";
       setText("as-of", "No price data yet. Add the Alpha Vantage API key and run the workflow once.");
       setText("chart-note", "Once data is generated, this chart will update automatically on trading days.");
       setText("price-now", "—");
@@ -165,6 +166,26 @@ const main = async () => {
 
     const lastDate = dates[dates.length - 1];
     const lastPrice = series[lastDate];
+
+    // Render verdict banners
+    const verdictsEl = el("verdicts");
+    verdictsEl.innerHTML = "";
+    for (const ev of [evAug, evOct]) {
+      if (!ev) continue;
+      const idx = firstIndexOnOrAfter(dates, ev.date);
+      if (idx === null) continue;
+      const callDate = dates[idx];
+      const callPrice = series[callDate];
+      const change = (lastPrice - callPrice) / callPrice;
+      const isDown = lastPrice < callPrice;
+      const div = document.createElement("div");
+      div.className = `verdict ${isDown ? "verdict--down" : "verdict--up"}`;
+      div.innerHTML = `<span class="verdict-arrow">${isDown ? "\u25BC" : "\u25B2"}</span>`
+        + `<div class="verdict-text"><div class="verdict-label">${ev.label}: `
+        + `${symbol} ${isDown ? "down" : "up"} ${fmtPct.format(Math.abs(change))}</div>`
+        + `<div>${fmtUsd.format(callPrice)} on ${callDate} → ${fmtUsd.format(lastPrice)} on ${lastDate}</div></div>`;
+      verdictsEl.appendChild(div);
+    }
 
     setText("as-of", `As of ${lastDate} (adjusted close).`);
     setText("price-now", fmtUsd.format(lastPrice));

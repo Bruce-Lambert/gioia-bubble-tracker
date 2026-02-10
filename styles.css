@@ -63,6 +63,48 @@ select {
   font-size: 14px;
 }
 
+.verdicts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.verdict {
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.verdict-arrow {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.verdict-text {
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.verdict-label {
+  font-weight: 650;
+  font-size: 15px;
+}
+
+.verdict--down {
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  color: #166534;
+}
+
+.verdict--up {
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+}
+
 .cards {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -110,6 +152,7 @@ ul { padding-left: 18px; }
 
 @media (max-width: 980px) {
   .controls { grid-template-columns: 1fr; }
+  .verdicts { grid-template-columns: 1fr; }
   .cards { grid-template-columns: 1fr 1fr; }
   .chart-wrap { height: 380px; }
 }
