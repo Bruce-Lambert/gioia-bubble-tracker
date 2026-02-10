@@ -18,27 +18,28 @@ const predictionLinesPlugin = {
     if (!opts || !Array.isArray(opts.lines) || opts.lines.length === 0) return;
 
     const { ctx, chartArea } = chart;
-    const x = chart.scales.x;
-    if (!x) return;
+    const y = chart.scales.y;
+    if (!y) return;
 
     ctx.save();
     ctx.lineWidth = 1;
     ctx.setLineDash([6, 6]);
-    ctx.strokeStyle = "rgba(15, 23, 42, 0.35)";
-    ctx.fillStyle = "rgba(15, 23, 42, 0.75)";
-    ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "top";
+    ctx.textBaseline = "bottom";
 
     for (const line of opts.lines) {
-      if (typeof line.index !== "number") continue;
-      const xPos = x.getPixelForValue(line.index);
+      if (typeof line.price !== "number") continue;
+      const yPos = y.getPixelForValue(line.price);
+      const color = line.color || "rgba(15, 23, 42, 0.5)";
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+      ctx.textAlign = "right";
       ctx.beginPath();
-      ctx.moveTo(xPos, chartArea.top);
-      ctx.lineTo(xPos, chartArea.bottom);
+      ctx.moveTo(chartArea.left, yPos);
+      ctx.lineTo(chartArea.right, yPos);
       ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillText(line.label, xPos + 6, chartArea.top + 6);
+      ctx.fillText(line.label, chartArea.right - 6, yPos - 4);
       ctx.setLineDash([6, 6]);
     }
 
@@ -229,11 +230,13 @@ const main = async () => {
 
     const augIdx = firstIndexOnOrAfter(dates, augDate);
     const octIdx = firstIndexOnOrAfter(dates, octDate);
+    const augPrice = augIdx !== null ? series[dates[augIdx]] : null;
+    const octPrice = octIdx !== null ? series[dates[octIdx]] : null;
 
     const predictionLines = [
-      { index: augIdx, label: `Aug 8, 2025` },
-      { index: octIdx, label: `Oct 30, 2025` }
-    ].filter((x) => typeof x.index === "number");
+      { price: augPrice, label: `Aug 8 close: ${fmtUsd.format(augPrice)}`, color: "rgba(220, 38, 38, 0.5)" },
+      { price: octPrice, label: `Oct 30 close: ${fmtUsd.format(octPrice)}`, color: "rgba(37, 99, 235, 0.5)" }
+    ].filter((x) => typeof x.price === "number");
 
     buildChart(dates, datasets, predictionLines);
 
