@@ -26,8 +26,7 @@
     }
   ],
   "metrics": {
-    "invest_amount_usd": 1000,
-    "shares_amount": 100
+    "invest_amount_usd": 1000
   },
   "project_title": "Ted Gioia AI Bubble Call Tracker",
   "tickers": [
@@ -40,8 +39,12 @@
       "symbol": "META"
     },
     {
-      "name": "Invesco QQQ Trust",
+      "name": "Invesco QQQ Trust (NASDAQ 100)",
       "symbol": "QQQ"
+    },
+    {
+      "name": "Vanguard Total Stock Market ETF",
+      "symbol": "VTI"
     }
   ]
 }

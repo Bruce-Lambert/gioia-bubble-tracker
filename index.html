@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ted Gioia AI Bubble Call Tracker</title>
-  <meta name="description" content="A neutral tracker of how NVDA, META, and QQQ performed after two public 'bubble top' posts by Ted Gioia." />
+  <meta name="description" content="A neutral tracker of how NVDA, META, QQQ, and VTI performed after two public 'bubble top' posts by Ted Gioia." />
   <link rel="stylesheet" href="styles.css" />
 </head>
 
@@ -12,59 +12,34 @@
   <header class="container">
     <h1>Ted Gioia AI Bubble Call Tracker</h1>
     <p class="subhead">
-      A neutral performance tracker for <span class="mono">NVDA</span>, <span class="mono">META</span>, and <span class="mono">QQQ</span> since two public posts
-      by Ted Gioia that discussed an “AI bubble” peaking.
+      A neutral performance tracker since two public posts by Ted Gioia
+      that discussed an "AI bubble" peaking. Dashed lines mark the closing
+      price on each prediction date.
     </p>
   </header>
 
   <main class="container">
-    <section class="controls">
-      <div class="control">
-        <label for="ticker">Ticker</label>
-        <select id="ticker"></select>
-      </div>
-
-      <div class="control">
-        <label>Data</label>
-        <div class="muted" id="as-of">Loading…</div>
-      </div>
-
-      <div class="control">
-        <label>Method</label>
-        <div class="muted">
-          Uses daily <strong>adjusted close</strong> (splits/dividends adjusted).
-        </div>
+    <section class="info-bar">
+      <div class="muted" id="as-of">Loading…</div>
+      <div class="muted">
+        Uses daily <strong>adjusted close</strong> (splits/dividends adjusted).
       </div>
     </section>
 
     <section class="verdicts" id="verdicts"></section>
 
-    <section class="cards" id="cards">
-      <div class="card">
-        <div class="k">Adjusted close</div>
-        <div class="v" id="price-now">—</div>
-        <div class="s" id="price-date">—</div>
-      </div>
-
-      <div class="card">
-        <div class="k">$1000 invested on Aug 8, 2025</div>
-        <div class="v" id="invest-aug">—</div>
-        <div class="s" id="ret-aug">—</div>
-      </div>
-
-      <div class="card">
-        <div class="k">$1000 invested on Oct 30, 2025</div>
-        <div class="v" id="invest-oct">—</div>
-        <div class="s" id="ret-oct">—</div>
-      </div>
-    </section>
-
-    <section class="chart-wrap">
-      <canvas id="chart" aria-label="Performance chart" role="img"></canvas>
-      <div class="muted tiny" id="chart-note"></div>
-    </section>
+    <section class="chart-grid" id="chart-grid"></section>
 
     <section class="notes">
+      <h2>Why include a total-market index?</h2>
+      <p>
+        Gioia's posts single out AI-adjacent stocks, but the overwhelming
+        majority of Americans invest through broad, diversified index funds —
+        not individual tech names. Showing VTI (Vanguard Total Stock Market
+        ETF) alongside NVDA and META puts the "bubble" claim in the context
+        that matters to most investors.
+      </p>
+
       <h2>Sources</h2>
       <ul id="sources"></ul>
 

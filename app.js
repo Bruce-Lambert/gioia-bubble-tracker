@@ -32,14 +32,14 @@ const predictionLinesPlugin = {
       const color = line.color || "rgba(15, 23, 42, 0.5)";
       ctx.strokeStyle = color;
       ctx.fillStyle = color;
-      ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+      ctx.font = "11px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
       ctx.textAlign = "right";
       ctx.beginPath();
       ctx.moveTo(chartArea.left, yPos);
       ctx.lineTo(chartArea.right, yPos);
       ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillText(line.label, chartArea.right - 6, yPos - 4);
+      ctx.fillText(line.label, chartArea.right - 4, yPos - 3);
       ctx.setLineDash([6, 6]);
     }
 
@@ -49,65 +49,47 @@ const predictionLinesPlugin = {
 
 Chart.register(predictionLinesPlugin);
 
-let chart;
+const setText = (id, value) => { el(id).textContent = value; };
 
-const buildChart = (labels, datasets, predictionLines) => {
-  const ctx = el("chart").getContext("2d");
-  if (chart) chart.destroy();
+const charts = {};
 
-  chart = new Chart(ctx, {
+const buildSmallChart = (canvasEl, labels, data, predictionLines, color) => {
+  return new Chart(canvasEl.getContext("2d"), {
     type: "line",
-    data: { labels, datasets },
+    data: {
+      labels,
+      datasets: [{
+        data,
+        borderColor: color,
+        backgroundColor: color.replace(")", ", 0.08)").replace("rgb(", "rgba("),
+        fill: true,
+        borderWidth: 2,
+        pointRadius: 0,
+        tension: 0.15
+      }]
+    },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       interaction: { mode: "index", intersect: false },
       plugins: {
-        legend: { display: true },
+        legend: { display: false },
         tooltip: {
           callbacks: {
-            label: (context) => {
-              const v = context.parsed.y;
-              return `${context.dataset.label}: ${fmtUsd.format(v)}`;
-            }
+            label: (context) => fmtUsd.format(context.parsed.y)
           }
         },
         predictionLines: { lines: predictionLines }
       },
       scales: {
-        x: { ticks: { maxTicksLimit: 10 } },
+        x: { ticks: { maxTicksLimit: 6, font: { size: 10 } } },
         y: {
           beginAtZero: false,
-          ticks: { callback: (v) => fmtUsd.format(v) }
+          ticks: { callback: (v) => fmtUsd.format(v), font: { size: 10 } }
         }
       }
     }
   });
-};
-
-const setText = (id, value) => { el(id).textContent = value; };
-
-const loadJson = async (path) => {
-  const res = await fetch(path, { cache: "no-store" });
-  if (!res.ok) throw new Error(`Failed to load ${path}: ${res.status} ${res.statusText}`);
-  return res.json();
-};
-
-const computeSeries = ({ series, dates, callDate, investAmount }) => {
-  const idx = firstIndexOnOrAfter(dates, callDate);
-  if (idx === null) return { idx: null, actualDate: null, shares: null, values: [] };
-
-  const actualDate = dates[idx];
-  const priceAt = series[actualDate];
-  const shares = investAmount / priceAt;
-
-  const values = dates.map((d) => shares * series[d]);
-  return { idx, actualDate, shares, values };
-};
-
-const computeReturn = (startValue, endValue) => {
-  if (!Number.isFinite(startValue) || !Number.isFinite(endValue) || startValue === 0) return null;
-  return (endValue / startValue) - 1;
 };
 
 const main = async () => {
@@ -129,53 +111,84 @@ const main = async () => {
     sources.appendChild(li);
   }
 
-  const tickerSelect = el("ticker");
-  tickerSelect.innerHTML = "";
-  for (const t of cfg.tickers || []) {
-    const opt = document.createElement("option");
-    opt.value = t.symbol;
-    opt.textContent = `${t.symbol} — ${t.name}`;
-    tickerSelect.appendChild(opt);
-  }
+  const tickers = cfg.tickers || [];
+  const events = cfg.events || [];
+  const colors = [
+    "rgb(59, 130, 246)",
+    "rgb(16, 185, 129)",
+    "rgb(139, 92, 246)",
+    "rgb(245, 158, 11)"
+  ];
 
-  const investAmount = cfg.metrics?.invest_amount_usd ?? 1000;
+  const grid = el("chart-grid");
+  grid.innerHTML = "";
 
-  const [evAug, evOct] = cfg.events || [];
-  const augDate = evAug?.date;
-  const octDate = evOct?.date;
+  const verdictsEl = el("verdicts");
+  verdictsEl.innerHTML = "";
 
-  const render = (symbol) => {
+  let anyData = false;
+
+  for (let ti = 0; ti < tickers.length; ti++) {
+    const t = tickers[ti];
+    const symbol = t.symbol;
     const series = data.series?.[symbol] || {};
     const dates = toSortedDates(series);
 
+    // Build chart cell
+    const cell = document.createElement("div");
+    cell.className = "chart-cell";
+
+    const title = document.createElement("div");
+    title.className = "chart-title";
+    title.textContent = `${symbol} — ${t.name}`;
+    cell.appendChild(title);
+
+    const subtitle = document.createElement("div");
+    subtitle.className = "chart-subtitle";
+
     if (dates.length === 0) {
-      el("verdicts").innerHTML = "";
-      setText("as-of", "No price data yet. Add the Alpha Vantage API key and run the workflow once.");
-      setText("chart-note", "Once data is generated, this chart will update automatically on trading days.");
-      setText("price-now", "—");
-      setText("price-date", "—");
-      setText("invest-aug", "—");
-      setText("ret-aug", "—");
-      setText("invest-oct", "—");
-      setText("ret-oct", "—");
-      if (chart) chart.destroy();
-      return;
+      subtitle.textContent = "No data yet";
+      cell.appendChild(subtitle);
+      grid.appendChild(cell);
+      continue;
     }
 
+    anyData = true;
     const lastDate = dates[dates.length - 1];
     const lastPrice = series[lastDate];
 
-    // Render verdict banners
-    const verdictsEl = el("verdicts");
-    verdictsEl.innerHTML = "";
-    for (const ev of [evAug, evOct]) {
-      if (!ev) continue;
+    subtitle.textContent = `${fmtUsd.format(lastPrice)} as of ${lastDate}`;
+    cell.appendChild(subtitle);
+
+    const wrap = document.createElement("div");
+    wrap.className = "chart-canvas-wrap";
+    const canvas = document.createElement("canvas");
+    canvas.setAttribute("aria-label", `${symbol} price chart`);
+    canvas.setAttribute("role", "img");
+    wrap.appendChild(canvas);
+    cell.appendChild(wrap);
+    grid.appendChild(cell);
+
+    // Compute prediction lines and verdicts
+    const priceValues = dates.map((d) => series[d]);
+    const predictionLines = [];
+
+    for (const ev of events) {
       const idx = firstIndexOnOrAfter(dates, ev.date);
       if (idx === null) continue;
       const callDate = dates[idx];
       const callPrice = series[callDate];
       const change = (lastPrice - callPrice) / callPrice;
       const isDown = lastPrice < callPrice;
+
+      const isAug = ev.date === events[0]?.date;
+      predictionLines.push({
+        price: callPrice,
+        label: `${isAug ? "Aug 8" : "Oct 30"}: ${fmtUsd.format(callPrice)}`,
+        color: isAug ? "rgba(220, 38, 38, 0.5)" : "rgba(37, 99, 235, 0.5)"
+      });
+
+      // Create verdict banner
       const div = document.createElement("div");
       div.className = `verdict ${isDown ? "verdict--down" : "verdict--up"}`;
       div.innerHTML = `<span class="verdict-arrow">${isDown ? "\u25BC" : "\u25B2"}</span>`
@@ -185,71 +198,25 @@ const main = async () => {
       verdictsEl.appendChild(div);
     }
 
+    // Destroy previous chart instance if re-rendering
+    if (charts[symbol]) charts[symbol].destroy();
+    charts[symbol] = buildSmallChart(canvas, dates, priceValues, predictionLines, colors[ti % colors.length]);
+  }
+
+  if (anyData) {
+    const sampleSeries = data.series?.[tickers[0]?.symbol] || {};
+    const sampleDates = toSortedDates(sampleSeries);
+    const lastDate = sampleDates[sampleDates.length - 1] || "—";
     setText("as-of", `As of ${lastDate} (adjusted close).`);
-    setText("price-now", fmtUsd.format(lastPrice));
-    setText("price-date", `Date: ${lastDate}`);
+  } else {
+    setText("as-of", "No price data yet. Add the Alpha Vantage API key and run the workflow once.");
+  }
+};
 
-    const aug = computeSeries({ series, dates, callDate: augDate, investAmount });
-    const oct = computeSeries({ series, dates, callDate: octDate, investAmount });
-
-    const augEnd = aug.values[aug.values.length - 1];
-    const octEnd = oct.values[oct.values.length - 1];
-
-    if (aug.actualDate) {
-      setText("invest-aug", fmtUsd.format(augEnd));
-      const r = computeReturn(investAmount, augEnd);
-      setText("ret-aug", `Start: ${aug.actualDate} • Return: ${r === null ? "—" : fmtPct.format(r)}`);
-    } else {
-      setText("invest-aug", "—");
-      setText("ret-aug", "—");
-    }
-
-    if (oct.actualDate) {
-      setText("invest-oct", fmtUsd.format(octEnd));
-      const r = computeReturn(investAmount, octEnd);
-      setText("ret-oct", `Start: ${oct.actualDate} • Return: ${r === null ? "—" : fmtPct.format(r)}`);
-    } else {
-      setText("invest-oct", "—");
-      setText("ret-oct", "—");
-    }
-
-    const priceValues = dates.map((d) => series[d]);
-
-    const datasets = [
-      {
-        label: `${symbol} adjusted close`,
-        data: priceValues,
-        borderColor: "rgb(59, 130, 246)",
-        backgroundColor: "rgba(59, 130, 246, 0.1)",
-        fill: true,
-        borderWidth: 2,
-        pointRadius: 0,
-        tension: 0.15
-      }
-    ];
-
-    const augIdx = firstIndexOnOrAfter(dates, augDate);
-    const octIdx = firstIndexOnOrAfter(dates, octDate);
-    const augPrice = augIdx !== null ? series[dates[augIdx]] : null;
-    const octPrice = octIdx !== null ? series[dates[octIdx]] : null;
-
-    const predictionLines = [
-      { price: augPrice, label: `Aug 8 close: ${fmtUsd.format(augPrice)}`, color: "rgba(220, 38, 38, 0.5)" },
-      { price: octPrice, label: `Oct 30 close: ${fmtUsd.format(octPrice)}`, color: "rgba(37, 99, 235, 0.5)" }
-    ].filter((x) => typeof x.price === "number");
-
-    buildChart(dates, datasets, predictionLines);
-
-    const noteParts = [];
-    if (aug.actualDate && aug.actualDate !== augDate) noteParts.push(`Aug marker uses next trading day (${aug.actualDate}).`);
-    if (oct.actualDate && oct.actualDate !== octDate) noteParts.push(`Oct marker uses next trading day (${oct.actualDate}).`);
-    setText("chart-note", noteParts.join(" "));
-  };
-
-  tickerSelect.addEventListener("change", () => render(tickerSelect.value));
-
-  // default render
-  render(tickerSelect.value);
+const loadJson = async (path) => {
+  const res = await fetch(path, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Failed to load ${path}: ${res.status} ${res.statusText}`);
+  return res.json();
 };
 
 document.addEventListener("DOMContentLoaded", () => {

@@ -36,30 +36,10 @@ h2 {
 
 .subhead { margin: 0; color: var(--muted); }
 
-.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-
-.controls {
-  display: grid;
-  grid-template-columns: 220px 1fr 1fr;
-  gap: 12px;
-  align-items: start;
+.info-bar {
+  display: flex;
+  gap: 24px;
   margin-top: 16px;
-}
-
-.control label {
-  display: block;
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 6px;
-}
-
-select {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: white;
-  color: var(--fg);
   font-size: 14px;
 }
 
@@ -105,34 +85,44 @@ select {
   color: #991b1b;
 }
 
-.cards {
+/* Small-multiples chart grid */
+.chart-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
   margin-top: 14px;
 }
 
-.card {
-  background: var(--card);
+.chart-cell {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 12px;
-  min-height: 92px;
+  display: flex;
+  flex-direction: column;
 }
 
-.k { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-.v { font-size: 20px; font-weight: 650; }
-.s { font-size: 12px; color: var(--muted); margin-top: 6px; }
-
-.chart-wrap {
-  margin-top: 14px;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  height: 430px;
+.chart-title {
+  font-size: 15px;
+  font-weight: 650;
+  margin-bottom: 2px;
 }
 
-#chart { width: 100%; height: 100%; }
+.chart-subtitle {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.chart-canvas-wrap {
+  flex: 1;
+  min-height: 220px;
+  position: relative;
+}
+
+.chart-canvas-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
 
 .notes {
   margin-top: 14px;
@@ -150,13 +140,8 @@ ul { padding-left: 18px; }
   margin-top: 12px;
 }
 
-@media (max-width: 980px) {
-  .controls { grid-template-columns: 1fr; }
+@media (max-width: 700px) {
+  .info-bar { flex-direction: column; gap: 6px; }
   .verdicts { grid-template-columns: 1fr; }
-  .cards { grid-template-columns: 1fr 1fr; }
-  .chart-wrap { height: 380px; }
-}
-
-@media (max-width: 520px) {
-  .cards { grid-template-columns: 1fr; }
+  .chart-grid { grid-template-columns: 1fr; }
 }
