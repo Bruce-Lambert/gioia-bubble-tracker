@@ -1,7 +1,7 @@
 {
   "data_source": {
-    "endpoint": "TIME_SERIES_DAILY_ADJUSTED",
-    "field": "5. adjusted close",
+    "endpoint": "TIME_SERIES_DAILY",
+    "field": "4. close",
     "provider": "Alpha Vantage"
   },
   "data_window": {

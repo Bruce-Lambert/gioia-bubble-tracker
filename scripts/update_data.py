@@ -17,7 +17,7 @@ AV_URL = "https://www.alphavantage.co/query"
 @dataclass(frozen=True)
 class AvConfig:
     api_key: str
-    outputsize: str = "full"  # we trim locally; "full" ensures we can cover the backtest window
+    outputsize: str = "compact"  # free tier; returns last 100 trading days, merged daily
 
 
 def log(msg: str) -> None:
@@ -34,9 +34,9 @@ def dump_json(path: Path, obj: Dict[str, Any]) -> None:
     path.write_text(json.dumps(obj, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def fetch_daily_adjusted(symbol: str, cfg: AvConfig) -> Dict[str, Any]:
+def fetch_daily(symbol: str, cfg: AvConfig) -> Dict[str, Any]:
     params = {
-        "function": "TIME_SERIES_DAILY_ADJUSTED",
+        "function": "TIME_SERIES_DAILY",
         "symbol": symbol,
         "outputsize": cfg.outputsize,
         "apikey": cfg.api_key,
@@ -51,23 +51,25 @@ def fetch_daily_adjusted(symbol: str, cfg: AvConfig) -> Dict[str, Any]:
         raise RuntimeError(
             f"Alpha Vantage throttled this request for {symbol}. Message: {j['Note']}"
         )
+    if "Information" in j:
+        raise RuntimeError(f"Alpha Vantage info for {symbol}: {j['Information']}")
     if "Time Series (Daily)" not in j:
         raise RuntimeError(f"Unexpected Alpha Vantage response for {symbol}: keys={list(j.keys())}")
 
     return j
 
 
-def extract_adjusted_close_series(av_json: Dict[str, Any], earliest_date: str) -> Dict[str, float]:
+def extract_close_series(av_json: Dict[str, Any], earliest_date: str) -> Dict[str, float]:
     series = av_json["Time Series (Daily)"]
     out: Dict[str, float] = {}
     for d, fields in series.items():
         if d < earliest_date:
             continue
-        adj = fields.get("5. adjusted close")
-        if adj is None:
+        close = fields.get("4. close")
+        if close is None:
             continue
         try:
-            out[d] = float(adj)
+            out[d] = float(close)
         except ValueError:
             continue
     return out
@@ -101,14 +103,14 @@ def main() -> int:
     current = load_json(out_path) if out_path.exists() else {"series": {}}
     current_series = current.get("series", {})
 
-    av_cfg = AvConfig(api_key=av_key, outputsize="full")
+    av_cfg = AvConfig(api_key=av_key)
 
     updated_any = False
 
     for i, sym in enumerate(tickers, start=1):
         log(f"Fetching {sym} ({i}/{len(tickers)}) from Alpha Vantage…")
-        av_json = fetch_daily_adjusted(sym, av_cfg)
-        incoming = extract_adjusted_close_series(av_json, earliest_date=earliest_date)
+        av_json = fetch_daily(sym, av_cfg)
+        incoming = extract_close_series(av_json, earliest_date=earliest_date)
 
         existing = current_series.get(sym, {})
         merged = merge_series(existing, incoming)
