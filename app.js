@@ -138,7 +138,6 @@ const main = async () => {
   }
 
   const investAmount = cfg.metrics?.invest_amount_usd ?? 1000;
-  const sharesAmount = cfg.metrics?.shares_amount ?? 100;
 
   const [evAug, evOct] = cfg.events || [];
   const augDate = evAug?.date;
@@ -154,8 +153,6 @@ const main = async () => {
       setText("chart-note", "Once data is generated, this chart will update automatically on trading days.");
       setText("price-now", "—");
       setText("price-date", "—");
-      setText("shares-100", "—");
-      setText("shares-100-date", "—");
       setText("invest-aug", "—");
       setText("ret-aug", "—");
       setText("invest-oct", "—");
@@ -190,10 +187,6 @@ const main = async () => {
     setText("as-of", `As of ${lastDate} (adjusted close).`);
     setText("price-now", fmtUsd.format(lastPrice));
     setText("price-date", `Date: ${lastDate}`);
-
-    const sharesValue = sharesAmount * lastPrice;
-    setText("shares-100", fmtUsd.format(sharesValue));
-    setText("shares-100-date", `${sharesAmount} shares × ${fmtUsd.format(lastPrice)}`);
 
     const aug = computeSeries({ series, dates, callDate: augDate, investAmount });
     const oct = computeSeries({ series, dates, callDate: octDate, investAmount });
