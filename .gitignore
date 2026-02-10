@@ -1,0 +1,6 @@
+.DS_Store
+.env
+__pycache__/
+*.pyc
+.claude/
+gioa_bubble_tracker_prompt.md

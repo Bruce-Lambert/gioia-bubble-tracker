@@ -1,0 +1,12 @@
+{
+  "earliest_date": "2025-07-01",
+  "endpoint": "TIME_SERIES_DAILY_ADJUSTED",
+  "field": "5. adjusted close",
+  "generated_utc": null,
+  "provider": "Alpha Vantage",
+  "series": {
+    "META": {},
+    "NVDA": {},
+    "QQQ": {}
+  }
+}

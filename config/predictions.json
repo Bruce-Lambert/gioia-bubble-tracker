@@ -1,0 +1,47 @@
+{
+  "data_source": {
+    "endpoint": "TIME_SERIES_DAILY_ADJUSTED",
+    "field": "5. adjusted close",
+    "provider": "Alpha Vantage"
+  },
+  "data_window": {
+    "earliest_date": "2025-07-01"
+  },
+  "description": "A small, neutral tracker that visualizes how selected AI-adjacent securities performed after two public 'bubble top' posts by Ted Gioia.",
+  "disclaimer": "Educational and informational only. Not investment advice. Data may be delayed or incomplete.",
+  "events": [
+    {
+      "date": "2025-08-08",
+      "id": "aug-2025-top",
+      "label": "Aug 8, 2025 post",
+      "title": "Is This What a Bubble Looks Like at the Top?",
+      "url": "https://www.honest-broker.com/p/is-this-what-a-bubble-looks-like"
+    },
+    {
+      "date": "2025-10-30",
+      "id": "oct-2025-top",
+      "label": "Oct 30, 2025 post",
+      "title": "The Bubble Just Burst.",
+      "url": "https://www.honest-broker.com/p/the-bubble-just-burst"
+    }
+  ],
+  "metrics": {
+    "invest_amount_usd": 1000,
+    "shares_amount": 100
+  },
+  "project_title": "Ted Gioia AI Bubble Call Tracker",
+  "tickers": [
+    {
+      "name": "NVIDIA",
+      "symbol": "NVDA"
+    },
+    {
+      "name": "Meta Platforms",
+      "symbol": "META"
+    },
+    {
+      "name": "Invesco QQQ Trust",
+      "symbol": "QQQ"
+    }
+  ]
+}
