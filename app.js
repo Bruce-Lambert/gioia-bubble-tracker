@@ -123,10 +123,10 @@ const main = async () => {
   const grid = el("chart-grid");
   grid.innerHTML = "";
 
-  const verdictsEl = el("verdicts");
-  verdictsEl.innerHTML = "";
-
   let anyData = false;
+  let correctCount = 0;
+  let totalCount = 0;
+  const correctCases = [];
 
   for (let ti = 0; ti < tickers.length; ti++) {
     const t = tickers[ti];
@@ -169,7 +169,7 @@ const main = async () => {
     cell.appendChild(wrap);
     grid.appendChild(cell);
 
-    // Compute prediction lines and verdicts
+    // Compute prediction lines and scorecard
     const priceValues = dates.map((d) => series[d]);
     const predictionLines = [];
 
@@ -178,29 +178,37 @@ const main = async () => {
       if (idx === null) continue;
       const callDate = dates[idx];
       const callPrice = series[callDate];
-      const change = (lastPrice - callPrice) / callPrice;
       const isDown = lastPrice < callPrice;
 
       const isAug = ev.date === events[0]?.date;
+      const dateLabel = isAug ? "Aug 8" : "Oct 30";
       predictionLines.push({
         price: callPrice,
-        label: `${isAug ? "Aug 8" : "Oct 30"}: ${fmtUsd.format(callPrice)}`,
+        label: `${dateLabel}: ${fmtUsd.format(callPrice)}`,
         color: isAug ? "rgba(220, 38, 38, 0.5)" : "rgba(37, 99, 235, 0.5)"
       });
 
-      // Create verdict banner
-      const div = document.createElement("div");
-      div.className = `verdict ${isDown ? "verdict--down" : "verdict--up"}`;
-      div.innerHTML = `<span class="verdict-arrow">${isDown ? "\u25BC" : "\u25B2"}</span>`
-        + `<div class="verdict-text"><div class="verdict-label">${ev.label}: `
-        + `${symbol} ${isDown ? "down" : "up"} ${fmtPct.format(Math.abs(change))}</div>`
-        + `<div>${fmtUsd.format(callPrice)} on ${callDate} → ${fmtUsd.format(lastPrice)} on ${lastDate}</div></div>`;
-      verdictsEl.appendChild(div);
+      totalCount++;
+      if (isDown) {
+        correctCount++;
+        correctCases.push(`${symbol} ${dateLabel}`);
+      }
     }
 
     // Destroy previous chart instance if re-rendering
     if (charts[symbol]) charts[symbol].destroy();
     charts[symbol] = buildSmallChart(canvas, dates, priceValues, predictionLines, colors[ti % colors.length]);
+  }
+
+  // Render scorecard
+  const scorecardEl = el("scorecard");
+  if (totalCount > 0) {
+    const detail = correctCount > 0
+      ? ` (${correctCases.join(", ")})`
+      : "";
+    scorecardEl.innerHTML = `<strong>Scorecard:</strong> Price is below the prediction-date close in <strong>${correctCount} of ${totalCount}</strong> cases${detail}.`;
+  } else {
+    scorecardEl.textContent = "";
   }
 
   if (anyData) {

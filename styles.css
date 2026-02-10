@@ -43,46 +43,14 @@ h2 {
   font-size: 14px;
 }
 
-.verdicts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 14px;
-}
-
-.verdict {
-  border-radius: 12px;
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.verdict-arrow {
-  font-size: 28px;
-  line-height: 1;
-}
-
-.verdict-text {
-  font-size: 14px;
-  line-height: 1.35;
-}
-
-.verdict-label {
-  font-weight: 650;
+.scorecard {
+  margin: 14px 0 0 0;
+  padding: 12px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
   font-size: 15px;
-}
-
-.verdict--down {
-  background: #dcfce7;
-  border: 1px solid #86efac;
-  color: #166534;
-}
-
-.verdict--up {
-  background: #fee2e2;
-  border: 1px solid #fca5a5;
-  color: #991b1b;
+  line-height: 1.45;
 }
 
 /* Small-multiples chart grid */
@@ -142,6 +110,5 @@ ul { padding-left: 18px; }
 
 @media (max-width: 700px) {
   .info-bar { flex-direction: column; gap: 6px; }
-  .verdicts { grid-template-columns: 1fr; }
   .chart-grid { grid-template-columns: 1fr; }
 }
