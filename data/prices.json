@@ -2,7 +2,7 @@
   "earliest_date": "2025-07-01",
   "endpoint": "TIME_SERIES_DAILY",
   "field": "4. close",
-  "generated_utc": "2026-02-10 22:01:43Z",
+  "generated_utc": "2026-02-11 05:13:35Z",
   "provider": "Alpha Vantage",
   "series": {
     "META": {
@@ -414,7 +414,7 @@
       "2026-02-05": 333.9,
       "2026-02-06": 340.96,
       "2026-02-09": 342.64,
-      "2026-02-10": 341.65
+      "2026-02-10": 341.8
     }
   }
 }
